@@ -1,1 +1,33 @@
+opam-version: "2.0"
+synopsis: "learn and evaluate 1D regression trees"
+description:
+  "dt1t learns of 1D (float -> float) decision tree functions from data"
+maintainer: ["mika@illouz.net"]
+authors: ["Mika Illouz"]
+license: "BSD"
+homepage: "https://github.com/barko/dt1d"
+doc: "https://barko.github.io/dt1d/"
+bug-reports: "https://github.com/barko/dt1d/issues"
+depends: [
+  "dune"     {>= "2.0"   }
+  "cmdliner" {>= "1.0.4" }
+  "ocaml"    {>= "4.08.0"}
+  "bos"      {>= "0.2.0" }
+  "atdgen"   {>= "2.2.1" }
+]
+build: [
+  ["dune" "subst"] {pinned}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@doc" {with-doc}
+  ]
+]
+
+dev-repo: "git+https://github.com/barko/dt1d.git"
 
