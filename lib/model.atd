@@ -1,0 +1,11 @@
+type 'a t = [
+  | Leaf of float
+  | Node of 'a node
+]
+type 'a node = {
+  left : 'a t;
+  right : 'a t;
+  split : 'a
+}
+
+type ft = float t

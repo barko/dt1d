@@ -1,0 +1,19 @@
+(library (name DT1D) (public_name dt1d) (libraries atdgen))
+
+; model.atd
+(rule
+  (targets model_t.ml model_t.mli)
+  (deps model.atd)
+  (action (run atdgen -t %{deps})))
+
+(rule
+  (targets model_b.ml model_b.mli)
+  (deps model.atd)
+  (action (run atdgen -b %{deps}))
+)
+
+(rule
+ (targets model_j.ml model_j.mli)
+ (deps model.atd)
+ (action (run atdgen -j -j-std %{deps}))
+)
