@@ -15,7 +15,7 @@ let line_seq =
   in
   loop
 
-let learn input_path output_path min_n max_depth =
+let learn input_path output_path min_n max_depth use_biniou =
   let input_ch =
     match input_path with
     | None -> stdin
@@ -38,17 +38,29 @@ let learn input_path output_path min_n max_depth =
     | None -> stdout
     | Some p -> open_out p
   in
-  let j = Regression.json_of_t t in
-  output_string output_ch j;
+  let serialize =
+    if use_biniou then
+      Regression.biniou_of_t
+    else
+      Regression.json_of_t
+  in
+  let s = serialize t in
+  output_string output_ch s;
   close_out output_ch
 
-let infer input_path output_path model_path =
+let infer input_path output_path model_path model_uses_biniou =
   let model_s =
     match Bos.OS.File.read (Fpath.v model_path) with
     | Ok contents -> contents
     | Error (`Msg msg) -> failwith msg
   in
-  let model = Regression.t_of_json model_s in
+  let deserialize =
+    if model_uses_biniou then
+      Regression.t_of_biniou
+    else
+      Regression.t_of_json
+  in
+  let model = deserialize model_s in
   let infer x = Regression.infer x model in
   let input_ch =
     match input_path with
@@ -105,7 +117,12 @@ let _ =
       let doc = "the maximum depth of the decision tree" in
       Arg.(required & opt (some int) None & info ["d";"max-depth"] ~docv:"INT" ~doc)
     in
-    Term.(pure learn $ input_path $ output_path $ min_n $ max_depth),
+    let use_biniou =
+      let doc = "in serializing the model file, use the Biniou \
+                 serialization format instead of JSON" in
+      Arg.(value & flag & info ["b";"biniou"] ~doc)
+    in
+    Term.(pure learn $ input_path $ output_path $ min_n $ max_depth $ use_biniou ),
     Term.info "train" ~doc
   in
 
@@ -122,12 +139,16 @@ let _ =
       let doc = "path of the model file" in
       Arg.(required & opt (some file) None & info ["m";"model"] ~docv:"PATH" ~doc)
     in
+    let model_uses_biniou =
+      let doc = "the model file is serialized using Biniou (absent: JSON)" in
+      Arg.(value & flag & info ["b";"biniou"] ~doc)
+    in
 
     let output_path =
       let doc = "path of the output file (absent: stdout)" in
       Arg.(value & opt (some string) None & info ["o";"output"] ~docv:"PATH" ~doc)
     in
-    Term.(pure infer $ input_path $ output_path $ model_path ),
+    Term.(pure infer $ input_path $ output_path $ model_path $ model_uses_biniou ),
     Term.info "infer" ~doc
   in
 

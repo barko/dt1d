@@ -29,31 +29,27 @@ let rec build min_n max_depth (z_left, b_left, i_left) (z_right, b_right, i_righ
     fun i best ->
       let n_left = i - i_left + 1 in
       let n_right = i_right - i in
-      (*
-      if n_left < min_n || n_right < min_n then
-        best
-      else *)
-        let n_left = float n_left in
-        let n_right = float n_right in
-        let sum_z_left = z_left.(i) -. b_left in
-        let sum_z_right = z_right.(i+1) -. b_right in
-        let gamma_left = sum_z_left /. n_left in
-        let gamma_right = sum_z_right /. n_right in
-        let reduction_left =
-          2. *. gamma_left *. sum_z_left -. n_left *. gamma_left *. gamma_left in
-        let reduction_right =
-          2. *. gamma_right *. sum_z_right -. n_right *. gamma_right *. gamma_right in
+      let n_left = float n_left in
+      let n_right = float n_right in
+      let sum_z_left = z_left.(i) -. b_left in
+      let sum_z_right = z_right.(i+1) -. b_right in
+      let gamma_left = sum_z_left /. n_left in
+      let gamma_right = sum_z_right /. n_right in
+      let reduction_left =
+        2. *. gamma_left *. sum_z_left -. n_left *. gamma_left *. gamma_left in
+      let reduction_right =
+        2. *. gamma_right *. sum_z_right -. n_right *. gamma_right *. gamma_right in
 
-        let reduction = reduction_left +. reduction_right in
-        match best with
-        | Some (_, best_reduction, _, _) ->
-          if reduction > best_reduction then
-            (* new best *)
-            Some (i, reduction, gamma_left, gamma_right)
-          else
-            best
-        | None ->
+      let reduction = reduction_left +. reduction_right in
+      match best with
+      | Some (_, best_reduction, _, _) ->
+        if reduction > best_reduction then
+          (* new best *)
           Some (i, reduction, gamma_left, gamma_right)
+        else
+          best
+      | None ->
+        Some (i, reduction, gamma_left, gamma_right)
   ) None in
   match best with
   | None -> assert false
@@ -136,20 +132,12 @@ let learn ~min_n ~max_depth xy =
 let json_of_t t =
   Model_j.string_of_ft t
 
-let binou_of_t t =
+let biniou_of_t t =
   Model_b.string_of_ft t
 
 let t_of_json s =
   Model_j.ft_of_string s
 
-let t_of_binou s =
+let t_of_biniou s =
   Model_b.ft_of_string s
 
-(*
-  print_endline s;
-  Array.iter (
-    fun (x, y) ->
-      let y_hat = eval x t in
-      Printf.printf "%.0f %+.4e %+.4e\n" x y y_hat
-  ) xy
-*)
