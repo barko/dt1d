@@ -94,40 +94,47 @@ let learn ~min_n ~max_depth xy =
   if max_depth < 1 then
     raise (Invalid_argument "learn: max_depth must be at least 1");
 
-  Array.sort (fun (x1, _) (x2, _) -> Float.compare x1 x2) xy;
-  let n = Array.length xy in
-  let mean_y =
-    let sum_y = Array.fold_left (
-      fun sum_y (_x_i, y_i) ->
-        sum_y +. y_i
-    ) 0.0 xy in
-    sum_y /. (float n)
-  in
-  let z = Array.map snd xy in
-  for i = 0 to n-1 do
-    z.(i) <- z.(i) -. mean_y
-  done;
-  let z_left = Array.make n 0.0 in
-  let z_right = Array.make n 0.0 in
+  if Array.length xy = 1 then
+    (* only one training data point *)
+    let _, y = xy.(0) in
+    `Leaf y
 
-  z_left.(0) <- z.(0) *. z.(0);
-  for i = 1 to n-1 do
-    z_left.(i) <- z_left.(i-1) +. z.(i);
-  done;
+  else (
+    Array.sort (fun (x1, _) (x2, _) -> Float.compare x1 x2) xy;
+    let n = Array.length xy in
+    let mean_y =
+      let sum_y = Array.fold_left (
+        fun sum_y (_x_i, y_i) ->
+          sum_y +. y_i
+      ) 0.0 xy in
+      sum_y /. (float n)
+    in
+    let z = Array.map snd xy in
+    for i = 0 to n-1 do
+      z.(i) <- z.(i) -. mean_y
+    done;
+    let z_left = Array.make n 0.0 in
+    let z_right = Array.make n 0.0 in
 
-  z_right.(n-1) <- z.(n-1) *. z.(n-1);
-  for i = n-2 downto 0 do
-    z_right.(i) <- z_right.(i+1) +. z.(i);
-  done;
+    z_left.(0) <- z.(0) *. z.(0);
+    for i = 1 to n-1 do
+      z_left.(i) <- z_left.(i-1) +. z.(i);
+    done;
 
-  let t = build min_n max_depth (z_left, 0.0, 0) (z_right, 0.0, n-1) 1 in
-  (* don't need z_left anymore; reuse it *)
-  let x = z_left in
-  for i = 0 to n-1 do
-    x.(i) <- fst xy.(i)
-  done;
-  let t = fix mean_y x t in
-  t
+    z_right.(n-1) <- z.(n-1) *. z.(n-1);
+    for i = n-2 downto 0 do
+      z_right.(i) <- z_right.(i+1) +. z.(i);
+    done;
+
+    let t = build min_n max_depth (z_left, 0.0, 0) (z_right, 0.0, n-1) 1 in
+    (* don't need z_left anymore; reuse it *)
+    let x = z_left in
+    for i = 0 to n-1 do
+      x.(i) <- fst xy.(i)
+    done;
+    let t = fix mean_y x t in
+    t
+  )
 
 let json_of_t t =
   Model_j.string_of_ft t
