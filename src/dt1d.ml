@@ -91,10 +91,7 @@ let infer input_path output_path model_path model_uses_biniou =
 open Cmdliner
 
 let _ =
-  let main_cmd =
-    let doc = "train and evaluate 1D regression tree models" in
-    Term.(pure ()), Term.info "dt1d" ~doc
-  in
+  let doc = "train and evaluate 1D regression tree models" in
 
   let train_cmd =
     let doc = "train a regression tree model." in
@@ -122,8 +119,8 @@ let _ =
                  serialization format instead of JSON" in
       Arg.(value & flag & info ["b";"biniou"] ~doc)
     in
-    Term.(pure learn $ input_path $ output_path $ min_n $ max_depth $ use_biniou ),
-    Term.info "train" ~doc
+    Cmd.v (Cmd.info "train" ~doc)
+      Term.(const learn $ input_path $ output_path $ min_n $ max_depth $ use_biniou )
   in
 
   let infer_cmd =
@@ -148,12 +145,12 @@ let _ =
       let doc = "path of the output file (absent: stdout)" in
       Arg.(value & opt (some string) None & info ["o";"output"] ~docv:"PATH" ~doc)
     in
-    Term.(pure infer $ input_path $ output_path $ model_path $ model_uses_biniou ),
-    Term.info "infer" ~doc
+    Cmd.v (Cmd.info "infer" ~doc)
+      Term.(const infer $ input_path $ output_path $ model_path $ model_uses_biniou )
+
   in
 
-  let commands = [train_cmd; infer_cmd] in
-  match Term.eval_choice ~catch:false main_cmd commands with
-  | `Error _ -> exit 1
-  | _ -> exit 0
+  let main_cmd =
+    Cmd.group (Cmd.info "dt1d" ~doc) [train_cmd; infer_cmd] in 
+  Cmd.eval ~catch:false main_cmd
 
