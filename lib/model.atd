@@ -1,11 +1,11 @@
-type 'a t = [
+type 'a t <ocaml module="Regression" t="t"> = [
   | Leaf of float
   | Node of 'a node
-]
-type 'a node = {
+] 
+type 'a node <ocaml module="Regression" t="node"> = {
   left : 'a t;
   right : 'a t;
   split : 'a
-}
+} 
 
-type ft = float t
+type ft <ocaml module="Regression" t="ft"> = float t 

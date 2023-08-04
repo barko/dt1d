@@ -28,9 +28,7 @@ let learn input_path output_path min_n max_depth use_biniou =
   let output_ch =
     match output_path with None -> stdout | Some p -> open_out p
   in
-  let serialize =
-    if use_biniou then Regression.biniou_of_t else Regression.json_of_t
-  in
+  let serialize = if use_biniou then Codec.biniou_of_t else Codec.json_of_t in
   let s = serialize t in
   output_string output_ch s;
   close_out output_ch
@@ -42,7 +40,7 @@ let infer input_path output_path model_path model_uses_biniou =
     | Error (`Msg msg) -> failwith msg
   in
   let deserialize =
-    if model_uses_biniou then Regression.t_of_biniou else Regression.t_of_json
+    if model_uses_biniou then Codec.t_of_biniou else Codec.t_of_json
   in
   let model = deserialize model_s in
   let infer x = Regression.infer x model in

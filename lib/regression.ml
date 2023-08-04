@@ -1,8 +1,17 @@
 (** learn a regression tree with one feature as input *)
 
-open Model_t
+type 'a t =
+  [ `Leaf of float
+  | `Node of 'a node
+  ]
 
-type t = Model_t.ft
+and 'a node = {
+  left : 'a t;
+  right : 'a t;
+  split : 'a;
+}
+
+type ft = float t
 
 let rec infer x = function
   | `Leaf y -> y
@@ -125,7 +134,12 @@ let learn ~min_n ~max_depth xy =
     let t = fix mean_y x t in
     t)
 
-let json_of_t t = Model_j.string_of_ft t
-let biniou_of_t t = Model_b.string_of_ft t
-let t_of_json s = Model_j.ft_of_string s
-let t_of_biniou s = Model_b.ft_of_string s
+let splits =
+  let rec loop accu = function
+    | `Leaf _ -> accu
+    | `Node { left; right; split } ->
+      let accu = loop accu left in
+      let accu = loop accu right in
+      split :: accu
+  in
+  loop []

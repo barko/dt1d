@@ -1,4 +1,9 @@
-(library (name DT1D) (public_name dt1d) (libraries atdgen))
+(library
+  (name DT1D)
+  (public_name dt1d)
+;  (modules codec regression model_j model_t model_b)
+  (libraries atdgen)
+)
 
 ; model.atd
 (rule
